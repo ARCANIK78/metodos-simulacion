@@ -6,15 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "export": "next build && next export"
   },
   "dependencies": {
     "@chakra-ui/color-mode": "^2.2.0",
     "@chakra-ui/icons": "^2.2.4",
-    "@chakra-ui/react": "^2.10.9",
+    "@chakra-ui/react": "^2.7.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "framer-motion": "^7.10.3",
+    "framer-motion": "^12.23.15",
     "next": "^14.2.32",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
@@ -22,10 +23,10 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
-    "typescript": "^5"
+    "typescript": "^5.9.2"
   }
 }

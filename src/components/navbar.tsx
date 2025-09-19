@@ -24,7 +24,7 @@ import {
   Icon,
   Collapse,
 } from "@chakra-ui/react";
-
+import { ReactNode } from "react";
 import {
   MoonIcon,
   CloseIcon,
@@ -105,8 +105,8 @@ export default function Nav() {
 
       {/* MobileNav dentro de Collapse */}
       <Collapse in={isOpen} animateOpacity>
-        <MobileNav />
-      </Collapse>
+      {<MobileNav /> as ReactNode}
+    </Collapse>
     </Box>
   );
 }

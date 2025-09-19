@@ -3,8 +3,8 @@ const nextConfig = {
   reactStrictMode: true,
   output: "export",          // 🔑 Genera HTML estático
   images: { unoptimized: true }, // Evita problemas con <Image />
-  basePath: "/NOMBRE_REPO",  // 👈 cambia por el nombre de tu repo en GitHub
-  assetPrefix: "/NOMBRE_REPO/",
+  basePath: "/metodos-simulacion",  // 👈 cambia por el nombre de tu repo en GitHub
+  assetPrefix: "/metodos-simulacion/",
 };
 
 module.exports = nextConfig;
