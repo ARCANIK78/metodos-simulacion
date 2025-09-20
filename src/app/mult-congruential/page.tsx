@@ -23,6 +23,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { useState } from "react";
+import { ErrorModal } from "@/components/alertMessage";
 
 interface Resultado {
   i: number;
@@ -37,6 +38,7 @@ export default function MultCongruential() {
   const [a, setA] = useState<number | "">("");
   const [m, setM] = useState<number | "">("");
   const [result, setResult] = useState<Resultado[]>([]);
+  const [error, setError] = useState<{ title: string; description: string } | null>(null);
 
   const generar = () => {
     const numX0 = Number(x0);
@@ -45,6 +47,10 @@ export default function MultCongruential() {
 
     if (!numM || numM <= 0) return;
 
+    if (numX0 % 2 === 0 || numX0 % 5 === 0) {
+      setError({ title: "Error en la semilla", description: "X₀ debe ser impar y no divisible  entre 2 y 5." });
+      return;
+    }
     const nums: Resultado[] = [];
     const seen = new Set<number>();
     let Xn = numX0;
@@ -112,6 +118,13 @@ export default function MultCongruential() {
             Generar
           </Button>
         </Flex>
+         {/* Modal de error */}
+          <ErrorModal
+            isOpen={!!error}
+            onClose={() => setError(null)}
+            title={error?.title || ""}
+            description={error?.description}
+          />
       </Stack>
 
       {/* Resultados en tabla */}
