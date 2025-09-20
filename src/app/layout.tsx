@@ -1,15 +1,18 @@
-"use client";
 import { ReactNode } from "react";
-import theme from "@/theme";
+import theme from "@/lib/theme";
 import Nav from "@/components/navbar";
-import { ChakraProvider, ColorModeScript } from "@chakra-ui/react";
+import { ChakraProvider } from "@chakra-ui/react";
+
+export const metadata = {
+  title: "methods-simulation",
+  description: "methods-simulation",
+};
+
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        {/* Evita el flash de color */}
-        <ColorModeScript initialColorMode={theme.config.initialColorMode} />
         <ChakraProvider theme={theme}>
           <Nav />
           {children}

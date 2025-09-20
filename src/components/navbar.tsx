@@ -33,6 +33,8 @@ import {
   ChevronRightIcon,
   ChevronDownIcon,
 } from "@chakra-ui/icons";
+import NextLink from 'next/link';
+
 
 // -------------------- Componentes de Navegación --------------------
 export default function Nav() {
@@ -124,9 +126,9 @@ const DesktopNav = () => {
           <Popover trigger="hover" placement="bottom-start">
             <PopoverTrigger>
               <Box
-                as="a"
-                p={2}
+                as={NextLink}
                 href={navItem.href ?? "#"}
+                p={2}
                 fontSize="lg"
                 fontWeight={500}
                 color={linkColor}
@@ -162,8 +164,8 @@ const DesktopNav = () => {
 const DesktopSubNav = ({ label, href, subLabel }: NavItem) => {
   return (
     <Box
-      as="a"
-      href={href}
+      as={NextLink}
+      href={href ?? "#"}
       role="group"
       display="block"
       p={2}
@@ -217,8 +219,8 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
     <Stack spacing={4} onClick={children && onToggle}>
       <Box
         py={2}
-        as="a"
-        href={href ?? "#"}
+       as={NextLink}
+       href={href ?? "#"}
         justifyContent="space-between"
         alignItems="center"
         _hover={{ textDecoration: "none" }}
@@ -247,7 +249,7 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
           align="start"
         >
           {children?.map((child) => (
-            <Box as="a" key={child.id} py={2} href={child.href} fontSize="md">
+            <Box as={NextLink}  key={child.id} py={2} href={child.href} fontSize="md">
                 {child.label}
             </Box>
             ))}
