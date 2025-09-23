@@ -286,16 +286,10 @@ const NAV_ITEMS: NavItem[] = [
       },
       { 
         id: "mult-congruential",
-        label: "Método Congruencial Multiplicativo Decimal", 
+        label: "Método Congruencial Multiplicativo", 
         subLabel: "Genera números aleatorios multiplicando por una constante.", 
         href: "/mult-congruential"
-      },
-        { 
-        id: "mult-congruential",
-        label: "Método Congruencial Multiplicativo Binario", 
-        subLabel: "Genera números aleatorios multiplicando por una constante.", 
-        href: "#"
-      },
+      }
     ],
   },
   {
