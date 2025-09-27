@@ -40,6 +40,10 @@ export default function MultCongruential() {
   const [result, setResult] = useState<Resultado[]>([]);
   const [error, setError] = useState<{ title: string; description: string } | null>(null);
 
+  // 🔹 Estados para paginación
+  const [page, setPage] = useState(0);
+  const pageSize = 100; // cantidad de filas por página
+
   const generar = () => {
     const numX0 = Number(x0);
     const numA = Number(a);
@@ -48,15 +52,19 @@ export default function MultCongruential() {
     if (!numM || numM <= 0) return;
 
     if (numX0 % 2 === 0 || numX0 % 5 === 0) {
-      setError({ title: "Error en la semilla", description: "X₀ debe ser impar y no divisible  entre 2 y 5." });
+      setError({
+        title: "Error en la semilla",
+        description: "X₀ debe ser impar y no divisible entre 2 y 5.",
+      });
       return;
     }
+
     const nums: Resultado[] = [];
     const seen = new Set<number>();
     let Xn = numX0;
     let i = 0;
 
-    while (!seen.has(Xn)) {
+    while (!seen.has(Xn) && i < numM) {
       const oper = (numA * Xn) % numM;
       nums.push({
         i,
@@ -70,7 +78,11 @@ export default function MultCongruential() {
     }
 
     setResult(nums);
+    setPage(0); // volver a inicio cuando se genere
   };
+
+  const totalPages = Math.ceil(result.length / pageSize);
+  const currentData = result.slice(page * pageSize, (page + 1) * pageSize);
 
   const inputProps = {
     w: "70px",
@@ -89,7 +101,7 @@ export default function MultCongruential() {
         </Button>
       </Flex>
 
-      {/* Inputs y botón Generar */}
+      {/* Inputs */}
       <Stack spacing={4} textAlign="center">
         <Heading size="md">Ingrese valores</Heading>
         <Flex align="center" justify="center" gap={3} wrap="wrap">
@@ -118,17 +130,18 @@ export default function MultCongruential() {
             Generar
           </Button>
         </Flex>
-         {/* Modal de error */}
-          <ErrorModal
-            isOpen={!!error}
-            onClose={() => setError(null)}
-            title={error?.title || ""}
-            description={error?.description}
-          />
+
+        {/* Modal de error */}
+        <ErrorModal
+          isOpen={!!error}
+          onClose={() => setError(null)}
+          title={error?.title || ""}
+          description={error?.description}
+        />
       </Stack>
 
       {/* Resultados en tabla */}
-      {result.length > 0 && (
+      {currentData.length > 0 && (
         <Box mt={6} overflowX="auto">
           <Table variant="striped">
             <Thead>
@@ -140,7 +153,7 @@ export default function MultCongruential() {
               </Tr>
             </Thead>
             <Tbody>
-              {result.map((row) => (
+              {currentData.map((row) => (
                 <Tr key={row.i}>
                   <Td>{row.i}</Td>
                   <Td>{row.Xn}</Td>
@@ -150,6 +163,28 @@ export default function MultCongruential() {
               ))}
             </Tbody>
           </Table>
+
+          {/* Controles de paginación */}
+          <Flex justify="center" align="center" gap={2} mt={4}>
+            <Button onClick={() => setPage(0)} isDisabled={page === 0}>
+              ⏮ Inicio
+            </Button>
+            <Button onClick={() => setPage((p) => Math.max(p - 1, 0))} isDisabled={page === 0}>
+              ◀ Anterior
+            </Button>
+            <Box>
+              Página {page + 1} de {totalPages}
+            </Box>
+            <Button
+              onClick={() => setPage((p) => Math.min(p + 1, totalPages - 1))}
+              isDisabled={page >= totalPages - 1}
+            >
+              Siguiente ▶
+            </Button>
+            <Button onClick={() => setPage(totalPages - 1)} isDisabled={page >= totalPages - 1}>
+              ⏭ Final
+            </Button>
+          </Flex>
         </Box>
       )}
 
