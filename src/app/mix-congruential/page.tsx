@@ -173,3 +173,4 @@ export default function MixCongruential() {
     </Box>
   );
 }
+/*m=32, Xo=49, a=17 , c=21*/

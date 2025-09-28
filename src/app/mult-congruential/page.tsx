@@ -124,12 +124,13 @@ export default function MultCongruential() {
           <Input {...inputProps} placeholder="a" value={a} onChange={(e) => setA(Number(e.target.value))} onFocus={() => setA("")} />
           <Input {...inputProps} placeholder="m" value={m} onChange={(e) => setM(Number(e.target.value))} onFocus={() => setM("")} />
           <Button colorScheme="green" onClick={generar}>Generar</Button>
+          <Flex justify="center" align="center" gap={2} mt={2}>
+            <Input {...inputProps} placeholder="Ir a página" value={directPage} onChange={(e) => setDirectPage(Number(e.target.value))} />
+            <Button colorScheme="purple" onClick={irPagina}>Ir</Button>
+          </Flex>
         </Flex>
 
-        <Flex justify="center" align="center" gap={2} mt={2}>
-          <Input {...inputProps} placeholder="Ir a página" value={directPage} onChange={(e) => setDirectPage(Number(e.target.value))} />
-          <Button colorScheme="purple" onClick={irPagina}>Ir</Button>
-        </Flex>
+        
 
         <ErrorModal isOpen={!!error} onClose={() => setError(null)} title={error?.title || ""} description={error?.description} />
       </Stack>
@@ -178,7 +179,7 @@ export default function MultCongruential() {
               <br />• m: módulo
               <br />
               <br />
-              ✅ Con paginación "lazy" y exponenciación modular, puedes saltar directo a cualquier página sin colgar la página.
+              Con paginación "lazy" y exponenciación modular, puedes saltar directo a cualquier página sin colgar la página.
             </Box>
           </ModalBody>
         </ModalContent>
