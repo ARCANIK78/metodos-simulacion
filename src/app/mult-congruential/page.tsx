@@ -27,10 +27,23 @@ import { ErrorModal } from "@/components/alertMessage";
 
 interface Resultado {
   i: number;
-  Xn: number;
-  operacion: number;
+  Xn: bigint;
+  operacion: bigint;
   uniforme: number;
 }
+
+// Exponenciación modular rápida: a^b mod m
+const modPow = (base: bigint, exp: bigint, mod: bigint): bigint => {
+  let result = 1n;
+  let b = base % mod;
+  let e = exp;
+  while (e > 0) {
+    if (e % 2n === 1n) result = (result * b) % mod;
+    b = (b * b) % mod;
+    e = e / 2n;
+  }
+  return result;
+};
 
 export default function MultCongruential() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -38,20 +51,21 @@ export default function MultCongruential() {
   const [a, setA] = useState<number | "">("");
   const [m, setM] = useState<number | "">("");
   const [result, setResult] = useState<Resultado[]>([]);
-  const [error, setError] = useState<{ title: string; description: string } | null>(null);
-
-  // 🔹 Estados para paginación
   const [page, setPage] = useState(0);
-  const pageSize = 100; // cantidad de filas por página
+  const pageSize = 100;
+  const [error, setError] = useState<{ title: string; description: string } | null>(null);
+  const [directPage, setDirectPage] = useState<number | "">("");
 
-  const generar = () => {
-    const numX0 = Number(x0);
-    const numA = Number(a);
-    const numM = Number(m);
+  const calcularPagina = (page: number) => {
+    if (!x0 || !a || !m) return;
 
-    if (!numM || numM <= 0) return;
+    const numX0 = BigInt(x0);
+    const numA = BigInt(a);
+    const numM = BigInt(m);
 
-    if (numX0 % 2 === 0 || numX0 % 5 === 0) {
+    if (numM <= 0n) return;
+
+    if (numX0 % 2n === 0n || numX0 % 5n === 0n) {
       setError({
         title: "Error en la semilla",
         description: "X₀ debe ser impar y no divisible entre 2 y 5.",
@@ -59,33 +73,38 @@ export default function MultCongruential() {
       return;
     }
 
-    const nums: Resultado[] = [];
-    const seen = new Set<number>();
-    let Xn = numX0;
-    let i = 0;
+    const startIndex = BigInt(page * pageSize);
+    let Xn = (modPow(numA, startIndex, numM) * numX0) % numM;
 
-    while (!seen.has(Xn) && i < numM) {
+    const nums: Resultado[] = [];
+    for (let i = 0; i < pageSize && startIndex + BigInt(i) < numM; i++) {
       const oper = (numA * Xn) % numM;
       nums.push({
-        i,
+        i: Number(startIndex + BigInt(i)),
         Xn,
         operacion: oper,
-        uniforme: oper / numM,
+        uniforme: Number(oper) / Number(numM),
       });
-      seen.add(Xn);
       Xn = oper;
-      i++;
     }
 
     setResult(nums);
-    setPage(0); // volver a inicio cuando se genere
   };
 
-  const totalPages = Math.ceil(result.length / pageSize);
-  const currentData = result.slice(page * pageSize, (page + 1) * pageSize);
+  const generar = () => {
+    setPage(0);
+    calcularPagina(0);
+  };
+
+  const irPagina = () => {
+    if (directPage === "" || directPage < 1) return;
+    const newPage = Number(directPage) - 1;
+    setPage(newPage);
+    calcularPagina(newPage);
+  };
 
   const inputProps = {
-    w: "70px",
+    w: "90px",
     type: "number",
     textAlign: "center" as const,
     _placeholder: { color: useColorModeValue("gray.400", "gray.500") },
@@ -93,102 +112,55 @@ export default function MultCongruential() {
 
   return (
     <Box p={8}>
-      {/* Título y Ayuda */}
       <Flex justify="space-between" align="center" mb={6}>
         <Heading size="lg">Método Congruencial Multiplicativo</Heading>
-        <Button colorScheme="blue" onClick={onOpen}>
-          Ayuda
-        </Button>
+        <Button colorScheme="blue" onClick={onOpen}>Ayuda</Button>
       </Flex>
 
-      {/* Inputs */}
       <Stack spacing={4} textAlign="center">
         <Heading size="md">Ingrese valores</Heading>
         <Flex align="center" justify="center" gap={3} wrap="wrap">
-          <Input
-            {...inputProps}
-            placeholder="X₀"
-            value={x0}
-            onChange={(e) => setX0(Number(e.target.value))}
-            onFocus={() => setX0("")}
-          />
-          <Input
-            {...inputProps}
-            placeholder="a"
-            value={a}
-            onChange={(e) => setA(Number(e.target.value))}
-            onFocus={() => setA("")}
-          />
-          <Input
-            {...inputProps}
-            placeholder="m"
-            value={m}
-            onChange={(e) => setM(Number(e.target.value))}
-            onFocus={() => setM("")}
-          />
-          <Button colorScheme="green" onClick={generar}>
-            Generar
-          </Button>
+          <Input {...inputProps} placeholder="X₀" value={x0} onChange={(e) => setX0(Number(e.target.value))} onFocus={() => setX0("")} />
+          <Input {...inputProps} placeholder="a" value={a} onChange={(e) => setA(Number(e.target.value))} onFocus={() => setA("")} />
+          <Input {...inputProps} placeholder="m" value={m} onChange={(e) => setM(Number(e.target.value))} onFocus={() => setM("")} />
+          <Button colorScheme="green" onClick={generar}>Generar</Button>
         </Flex>
 
-        {/* Modal de error */}
-        <ErrorModal
-          isOpen={!!error}
-          onClose={() => setError(null)}
-          title={error?.title || ""}
-          description={error?.description}
-        />
+        <Flex justify="center" align="center" gap={2} mt={2}>
+          <Input {...inputProps} placeholder="Ir a página" value={directPage} onChange={(e) => setDirectPage(Number(e.target.value))} />
+          <Button colorScheme="purple" onClick={irPagina}>Ir</Button>
+        </Flex>
+
+        <ErrorModal isOpen={!!error} onClose={() => setError(null)} title={error?.title || ""} description={error?.description} />
       </Stack>
 
-      {/* Resultados en tabla */}
-      {currentData.length > 0 && (
+      {result.length > 0 && (
         <Box mt={6} overflowX="auto">
           <Table variant="striped">
             <Thead>
-              <Tr>
-                <Th>i</Th>
-                <Th>Xn</Th>
-                <Th>(a*Xn)%m</Th>
-                <Th>Uniforme</Th>
-              </Tr>
+              <Tr><Th>i</Th><Th>Xn</Th><Th>(a*Xn)%m</Th><Th>Uniforme</Th></Tr>
             </Thead>
             <Tbody>
-              {currentData.map((row) => (
+              {result.map((row) => (
                 <Tr key={row.i}>
                   <Td>{row.i}</Td>
-                  <Td>{row.Xn}</Td>
-                  <Td>{row.operacion}</Td>
+                  <Td>{row.Xn.toString()}</Td>
+                  <Td>{row.operacion.toString()}</Td>
                   <Td>{row.uniforme.toFixed(4)}</Td>
                 </Tr>
               ))}
             </Tbody>
           </Table>
 
-          {/* Controles de paginación */}
           <Flex justify="center" align="center" gap={2} mt={4}>
-            <Button onClick={() => setPage(0)} isDisabled={page === 0}>
-              ⏮ Inicio
-            </Button>
-            <Button onClick={() => setPage((p) => Math.max(p - 1, 0))} isDisabled={page === 0}>
-              ◀ Anterior
-            </Button>
-            <Box>
-              Página {page + 1} de {totalPages}
-            </Box>
-            <Button
-              onClick={() => setPage((p) => Math.min(p + 1, totalPages - 1))}
-              isDisabled={page >= totalPages - 1}
-            >
-              Siguiente ▶
-            </Button>
-            <Button onClick={() => setPage(totalPages - 1)} isDisabled={page >= totalPages - 1}>
-              ⏭ Final
-            </Button>
+            <Button onClick={() => { setPage(0); calcularPagina(0); }} isDisabled={page === 0}>⏮ Inicio</Button>
+            <Button onClick={() => { const newPage = Math.max(page - 1, 0); setPage(newPage); calcularPagina(newPage); }} isDisabled={page === 0}>◀ Anterior</Button>
+            <Box>Página {page + 1}</Box>
+            <Button onClick={() => { const newPage = page + 1; setPage(newPage); calcularPagina(newPage); }} isDisabled={result.length < pageSize}>Siguiente ▶</Button>
           </Flex>
         </Box>
       )}
 
-      {/* Modal de Ayuda */}
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -204,6 +176,9 @@ export default function MultCongruential() {
               <br />• X₀: semilla inicial
               <br />• a: multiplicador
               <br />• m: módulo
+              <br />
+              <br />
+              ✅ Con paginación "lazy" y exponenciación modular, puedes saltar directo a cualquier página sin colgar la página.
             </Box>
           </ModalBody>
         </ModalContent>
