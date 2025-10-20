@@ -300,6 +300,11 @@ const NAV_ITEMS: NavItem[] = [
       { id: "freelance", label: "Freelance Projects", subLabel: "An exclusive list for contract work", href: "#" },
     ],
   },
-  { id: "after2", label: "after", href: "#" },
+  { id: "after2", 
+    label: "Animacion3D", 
+    children: [
+      {id: "monedaAnimation", label: "Volados", subLabel: "puto", href: "/monedaAnimation" },
+    ], 
+  },
   { id: "after3", label: "after", href: "#" },
 ];
