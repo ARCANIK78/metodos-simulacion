@@ -1,7 +1,8 @@
 "use client";
-import { useFrame } from "@react-three/fiber";
-import { useRef, useState } from "react";
+import { useFrame, useLoader } from "@react-three/fiber";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { TextureLoader } from "three";
 
 interface CoinMeshProps {
   isFlipping: boolean;
@@ -15,16 +16,19 @@ export default function CoinMesh({
   onFlipStart,
 }: CoinMeshProps) {
   const coinRef = useRef<THREE.Mesh>(null!);
-  const [rotationSpeed, setRotationSpeed] = useState(0);
+  const speedRef = useRef(0);
   const [flipping, setFlipping] = useState(false);
+
+  const caraTexture = useLoader(TextureLoader, "/moneda/cara11.png");
+  const cruzTexture = useLoader(TextureLoader, "/moneda/cruz11.png");
 
   useFrame(() => {
     if (flipping) {
-      coinRef.current.rotation.x += rotationSpeed;
-      coinRef.current.rotation.y += rotationSpeed / 2;
-      setRotationSpeed(rotationSpeed * 0.98);
+      coinRef.current.rotation.x += speedRef.current;
+      coinRef.current.rotation.y += speedRef.current / 2;
+      speedRef.current *= 0.98;
 
-      if (rotationSpeed < 0.01) {
+      if (speedRef.current < 0.01) {
         setFlipping(false);
         const result = Math.random() > 0.5 ? "Cara" : "Cruz";
         const finalRotation = result === "Cara" ? 0 : Math.PI;
@@ -34,10 +38,12 @@ export default function CoinMesh({
     }
   });
 
-  if (isFlipping && !flipping) {
-    setFlipping(true);
-    setRotationSpeed(0.3 + Math.random() * 0.2);
-  }
+  useEffect(() => {
+    if (isFlipping && !flipping) {
+      setFlipping(true);
+      speedRef.current = 0.3 + Math.random() * 0.2;
+    }
+  }, [isFlipping]);
 
   return (
     <mesh
@@ -48,11 +54,14 @@ export default function CoinMesh({
           onFlipStart();
         }
       }}
-      onPointerOver={(e) => (e.stopPropagation(), (document.body.style.cursor = "pointer"))}
-      onPointerOut={(e) => (e.stopPropagation(), (document.body.style.cursor = "default"))}
+      onPointerOver={() => (document.body.style.cursor = "pointer")}
+      onPointerOut={() => (document.body.style.cursor = "default")}
     >
-      <cylinderGeometry args={[1, 1, 0.2, 64]} />
-      <meshStandardMaterial color="gold" metalness={0.8} roughness={0.3} />
+      <cylinderGeometry args={[0.9, 0.9, 0.05, 64]} />
+      <meshStandardMaterial attach="material-1" map={caraTexture} metalness={0.9} roughness={0.2} />
+      <meshStandardMaterial attach="material-2" map={cruzTexture} metalness={0.9} roughness={0.2} />
+      <meshStandardMaterial attach="material-0" color="silver" metalness={1} roughness={0.3} />
+
     </mesh>
   );
 }
