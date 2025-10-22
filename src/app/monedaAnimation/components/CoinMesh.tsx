@@ -19,25 +19,39 @@ export default function CoinMesh({
   const speedRef = useRef(0);
   const [flipping, setFlipping] = useState(false);
 
+  // Texturas
   const caraTexture = useLoader(TextureLoader, "/moneda/cara11.png");
   const cruzTexture = useLoader(TextureLoader, "/moneda/cruz11.png");
+
 
   useFrame(() => {
     if (flipping) {
       coinRef.current.rotation.x += speedRef.current;
       coinRef.current.rotation.y += speedRef.current / 2;
-      speedRef.current *= 0.98;
+      speedRef.current *= 0.96;
 
+      // Cuando termina el giro
       if (speedRef.current < 0.01) {
         setFlipping(false);
-        const result = Math.random() > 0.5 ? "Cara" : "Cruz";
-        const finalRotation = result === "Cara" ? 0 : Math.PI;
-        coinRef.current.rotation.x = finalRotation;
+
+        // Determinar resultado
+        const result = Math.random() > 0.5 ? "Cruz" : "Cara";
+
+        // Resetear la rotación para que quede bien frente al usuario
+        if (result === "Cara") {
+          // Cara visible al frente
+          coinRef.current.rotation.set(Math.PI / 2, 0, 0);
+        } else {
+          // Cruz visible al frente (180°)
+          coinRef.current.rotation.set(-Math.PI / 2, 0, 0);
+        }
+
         onFlipEnd(result);
       }
     }
   });
 
+  // Iniciar el giro
   useEffect(() => {
     if (isFlipping && !flipping) {
       setFlipping(true);
@@ -48,7 +62,7 @@ export default function CoinMesh({
   return (
     <mesh
       ref={coinRef}
-      rotation={[0, 0, Math.PI / 2]}
+      rotation={[Math.PI / 2, 0, 0]} 
       onClick={() => {
         if (!isFlipping && !flipping) {
           onFlipStart();
@@ -61,7 +75,10 @@ export default function CoinMesh({
       <meshStandardMaterial attach="material-1" map={caraTexture} metalness={0.9} roughness={0.2} />
       <meshStandardMaterial attach="material-2" map={cruzTexture} metalness={0.9} roughness={0.2} />
       <meshStandardMaterial attach="material-0" color="silver" metalness={1} roughness={0.3} />
+      
+    
 
+     
     </mesh>
   );
 }
