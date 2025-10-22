@@ -30,20 +30,17 @@ export default function CoinMesh({
       coinRef.current.rotation.y += speedRef.current / 2;
       speedRef.current *= 0.96;
 
-      // Cuando termina el giro
       if (speedRef.current < 0.01) {
         setFlipping(false);
 
-        // Determinar resultado
         const result = Math.random() > 0.5 ? "Cruz" : "Cara";
-
-        // Resetear la rotación para que quede bien frente al usuario
+        const deg = -260;
+        const rad = (deg * Math.PI) / 180;
         if (result === "Cara") {
-          // Cara visible al frente
-          coinRef.current.rotation.set(Math.PI / 2, 0, 0);
+          
+          coinRef.current.rotation.set(Math.PI / 2, rad, 0);
         } else {
-          // Cruz visible al frente (180°)
-          coinRef.current.rotation.set(-Math.PI / 2, 0, 0);
+          coinRef.current.rotation.set(-Math.PI / 2, rad, 0);
         }
 
         onFlipEnd(result);
