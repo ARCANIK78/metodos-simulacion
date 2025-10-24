@@ -297,7 +297,7 @@ const NAV_ITEMS: NavItem[] = [
     label: "Math Tools",
     children: [
       { id: "mcm", label: "MCM & Período", subLabel: "Calcula mínimo común múltiplo y período máximob", href: "/mcm" },
-      { id: "freelance", label: "Freelance Projects", subLabel: "An exclusive list for contract work", href: "#" },
+      { id: "freelance", label: "Freelance Projects", subLabel: "An exclusive list for contract work", href: "/pruebas" },
     ],
   },
   { id: "after2", 

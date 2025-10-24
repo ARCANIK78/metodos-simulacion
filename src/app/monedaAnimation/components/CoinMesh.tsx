@@ -8,12 +8,14 @@ interface CoinMeshProps {
   isFlipping: boolean;
   onFlipEnd: (result: string) => void;
   onFlipStart: () => void;
+  onClick?: () => void; 
 }
 
 export default function CoinMesh({
   isFlipping,
   onFlipEnd,
   onFlipStart,
+  onClick,
 }: CoinMeshProps) {
   const coinRef = useRef<THREE.Mesh>(null!);
   const speedRef = useRef(0);
@@ -23,6 +25,7 @@ export default function CoinMesh({
   const caraTexture = useLoader(TextureLoader, "/moneda/cara11.png");
   const cruzTexture = useLoader(TextureLoader, "/moneda/cruz11.png");
 
+  const hasCalledEndRef = useRef(false);
 
   useFrame(() => {
     if (flipping) {
@@ -30,7 +33,8 @@ export default function CoinMesh({
       coinRef.current.rotation.y += speedRef.current / 2;
       speedRef.current *= 0.96;
 
-      if (speedRef.current < 0.01) {
+      if (speedRef.current < 0.01 && !hasCalledEndRef.current) {
+         hasCalledEndRef.current = true; 
         setFlipping(false);
 
         const result = Math.random() > 0.5 ? "Cruz" : "Cara";
@@ -51,6 +55,7 @@ export default function CoinMesh({
   // Iniciar el giro
   useEffect(() => {
     if (isFlipping && !flipping) {
+       hasCalledEndRef.current = false; 
       setFlipping(true);
       speedRef.current = 0.3 + Math.random() * 0.2;
     }
@@ -61,8 +66,8 @@ export default function CoinMesh({
       ref={coinRef}
       rotation={[Math.PI / 2, 0, 0]} 
       onClick={() => {
-        if (!isFlipping && !flipping) {
-          onFlipStart();
+        if (!isFlipping && !flipping && onClick) {
+        onClick();
         }
       }}
       onPointerOver={() => (document.body.style.cursor = "pointer")}
