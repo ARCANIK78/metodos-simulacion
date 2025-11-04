@@ -13,6 +13,7 @@ import {
   Button,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { motion } from "framer-motion";
 import DialogMMS from "@/components/DialogMMS";
 import dayjs from "dayjs";
 import GraficaLlegadas from "@/components/graficalegadas";
@@ -49,7 +50,6 @@ export default function MMSBancoPage() {
   
   const [servicios, setServicios] = useState<any[]>([]);
   const [sliderValues, setSliderValues] = useState<number[]>([40, 65, 85]);
-  const [lambda, setLambda] = useState<number>(0);
   const [numServidores, setNumServidores] = useState<number>(1);
   const [fallo, setFallo] = useState<boolean>(false);
   const [tiempoFallo, setTiempoFallo] = useState<number>(0);
@@ -111,76 +111,77 @@ export default function MMSBancoPage() {
   };
 
   const generarLlegadas = (
-  servicios: any[],
-  values: number[],
-  s: number,
-  hayFallo?: boolean,
-  duracionFallo?: number
-) => {
-  const filas: Llegada[] = [];
-  let hora = dayjs().startOf("day").hour(8);
-  const horaFin = dayjs().startOf("day").hour(15);
+    servicios: any[],
+    values: number[],
+    s: number,
+    hayFallo?: boolean,
+    duracionFallo?: number
+  ) => {
+    const filas: Llegada[] = [];
+    let hora = dayjs().startOf("day").hour(8);
+    const horaFin = dayjs().startOf("day").hour(15);
 
-  // Decide aleatoriamente si hoy hay fallo (solo si está activado)
-  const falloHoy = hayFallo ? Math.random() < 0.4 : false;
-  const horaFallo = falloHoy ? getRandomInt(8, 14) : null;
+    const falloHoy = hayFallo ? Math.random() < 0.4 : false;
+    const horaFallo = falloHoy ? getRandomInt(8, 14) : null;
 
-  while (hora.isBefore(horaFin)) {
-    // Llegada aleatoria entre 1 y 10 minutos
-    const minutosEntreLlegadas = getRandomInt(1, 10);
-    hora = hora.add(minutosEntreLlegadas, "minute");
-    if (hora.isAfter(horaFin)) break;
+    while (hora.isBefore(horaFin)) {
+      const minutosEntreLlegadas = getRandomInt(1, 10);
+      hora = hora.add(minutosEntreLlegadas, "minute");
+      if (hora.isAfter(horaFin)) break;
 
-    if (falloHoy && hora.hour() === horaFallo) {
+      if (falloHoy && hora.hour() === horaFallo) {
+        filas.push({
+          hora: hora.format("HH:mm"),
+          numeroAleatorioCaja: null,
+          caja: null,
+          numeroAleatorioTipo: null,
+          tipoOrden: "Fallo del sistema",
+        });
+        hora = hora.add((duracionFallo || 1) * 60, "minute");
+        if (hora.isAfter(horaFin)) break;
+      }
+
+      const numeroAleatorioCaja = getRandomInt(0, 100);
+      const caja = seleccionarCajaPorcentaje(numeroAleatorioCaja, s);
+
+      const numeroAleatorioTipo = getRandomInt(0, 100);
+      const tipoOrden = seleccionarServicioPorcentaje(servicios, values, numeroAleatorioTipo);
+
+      const tiempoServicio = tiemposServicio[tipoOrden] || 5;
+
       filas.push({
         hora: hora.format("HH:mm"),
-        numeroAleatorioCaja: null,
-        caja: null,
-        numeroAleatorioTipo: null,
-        tipoOrden: "Fallo del sistema",
+        numeroAleatorioCaja,
+        caja,
+        numeroAleatorioTipo,
+        tipoOrden,
       });
-      hora = hora.add((duracionFallo || 1) * 60, "minute");
-      if (hora.isAfter(horaFin)) break;
+
+      for (let c = 2; c <= caja; c++) {
+        const numeroAleatorioTipoExtra = getRandomInt(0, 100);
+        const tipoOrdenExtra = seleccionarServicioPorcentaje(servicios, values, numeroAleatorioTipoExtra);
+        filas.push({
+          hora: null,
+          numeroAleatorioCaja: null,
+          caja: null,
+          numeroAleatorioTipo: numeroAleatorioTipoExtra,
+          tipoOrden: tipoOrdenExtra,
+        });
+      }
+
+      hora = hora.add(tiempoServicio, "minute");
     }
 
-    const numeroAleatorioCaja = getRandomInt(0, 100);
-    const caja = seleccionarCajaPorcentaje(numeroAleatorioCaja, s);
+    setHistorialLlegadas((prev) => [...prev, filas]);
+    setDiaActual((prev) => prev + 1);
+    setLlegadas(filas);
+  };
 
-    const numeroAleatorioTipo = getRandomInt(0, 100);
-    const tipoOrden = seleccionarServicioPorcentaje(servicios, values, numeroAleatorioTipo);
-
-    const tiempoServicio = tiemposServicio[tipoOrden] || 5;
-
-    filas.push({
-      hora: hora.format("HH:mm"),
-      numeroAleatorioCaja,
-      caja,
-      numeroAleatorioTipo,
-      tipoOrden,
-    });
-
-    // Clientes extra si la caja tiene más de 1
-    for (let c = 2; c <= caja; c++) {
-      const numeroAleatorioTipoExtra = getRandomInt(0, 100);
-      const tipoOrdenExtra = seleccionarServicioPorcentaje(servicios, values, numeroAleatorioTipoExtra);
-      filas.push({
-        hora: null,
-        numeroAleatorioCaja: null,
-        caja: null,
-        numeroAleatorioTipo: numeroAleatorioTipoExtra,
-        tipoOrden: tipoOrdenExtra,
-      });
-    }
-
-    hora = hora.add(tiempoServicio, "minute");
-  }
-
-  setHistorialLlegadas((prev) => [...prev, filas]);
-  setDiaActual((prev) => prev + 1);
-  setLlegadas(filas);
-};
-
-
+  // 🎬 Variantes para animaciones
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  };
 
   return (
     <Box p={6}>
@@ -191,74 +192,154 @@ export default function MMSBancoPage() {
       <DialogMMS isOpen={isOpen} onClose={onClose} onNext={handleNext} />
 
       {llegadas.length > 0 && (
-        <Box mt={6} overflowX="auto">
-          <Text fontSize="lg" fontWeight="semibold" mb={2}>
-            Día {diaActual} - Tabla de llegadas (con tiempo de servicio y posibles fallos)
-          </Text>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUp}
+        >
+          <Box mt={6} overflowX="auto">
+            <Text fontSize="lg" fontWeight="semibold" mb={2}>
+              Día {diaActual} - Tabla de llegadas (con tiempo de servicio y posibles fallos)
+            </Text>
 
-          <Table variant="simple" size="md" colorScheme="gray">
-            <Thead bg="gray.800" position="sticky" top={0}>
-              <Tr>
-                <Th color="white">N°</Th>
-                <Th color="white">Hora</Th>
-                <Th color="white">Nº Aleatorio (caja)</Th>
-                <Th color="white">Caja</Th>
-                <Th color="white">Nº Aleatorio (tipo)</Th>
-                <Th color="white">Tipo de Orden</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {llegadas.map((llegada, index) => (
-                <Tr
-                  key={index}
-                  bg={bgServicio(llegada.tipoOrden)}
-                  color={llegada.tipoOrden.includes("Fallo") ? "white" : colorNormal}
-                >
-                  <Td>{index + 1}</Td>
-                  <Td>{llegada.hora ?? "-"}</Td>
-                  <Td>{llegada.numeroAleatorioCaja ?? "-"}</Td>
-                  <Td>{llegada.caja ?? "-"}</Td>
-                  <Td>{llegada.numeroAleatorioTipo ?? "-"}</Td>
-                  <Td display="flex" alignItems="center">
-                    <Box boxSize={5} mr={2}>
-                      {llegada.tipoOrden === "Fallo"
-                        ? iconosServicios["Fallo"]
-                        : iconosServicios[llegada.tipoOrden]}
-                    </Box>
-                    <Text>{llegada.tipoOrden}</Text>
-                  </Td>
+            <Table variant="simple" size="md" colorScheme="gray">
+              <Thead bg="gray.800" position="sticky" top={0}>
+                <Tr>
+                  <Th color="white">N°</Th>
+                  <Th color="white">Hora</Th>
+                  <Th color="white">Nº Aleatorio (caja)</Th>
+                  <Th color="white">Caja</Th>
+                  <Th color="white">Nº Aleatorio (tipo)</Th>
+                  <Th color="white">Tipo de Orden</Th>
                 </Tr>
-              ))}
-            </Tbody>
-          </Table>
+              </Thead>
+              <Tbody>
+                {llegadas.map((llegada, index) => (
+                  <Tr
+                    key={index}
+                    bg={bgServicio(llegada.tipoOrden)}
+                    color={llegada.tipoOrden.includes("Fallo") ? "white" : colorNormal}
+                  >
+                    <Td>{index + 1}</Td>
+                    <Td>{llegada.hora ?? "-"}</Td>
+                    <Td>{llegada.numeroAleatorioCaja ?? "-"}</Td>
+                    <Td>{llegada.caja ?? "-"}</Td>
+                    <Td>{llegada.numeroAleatorioTipo ?? "-"}</Td>
+                    <Td display="flex" alignItems="center">
+                      <Box boxSize={5} mr={2}>
+                        {llegada.tipoOrden === "Fallo"
+                          ? iconosServicios["Fallo"]
+                          : iconosServicios[llegada.tipoOrden]}
+                      </Box>
+                      <Text>{llegada.tipoOrden}</Text>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
 
-          <Button
-            mt={4}
-            colorScheme="teal"
-            onClick={() =>
-              generarLlegadas(servicios, sliderValues, numServidores, fallo, tiempoFallo)
-            }
-          >
-            Generar día siguiente
-          </Button>
-          <Button
+            <Button
+              mt={4}
+              colorScheme="teal"
+              onClick={() =>
+                generarLlegadas(servicios, sliderValues, numServidores, fallo, tiempoFallo)
+              }
+            >
+              Generar día siguiente
+            </Button>
+            <Button
               mt={4}
               colorScheme="blue"
               onClick={() => setMostrarGrafica((prev) => !prev)}
             >
               {mostrarGrafica ? "Ocultar gráfica" : "Generar gráfica"}
             </Button>
+
             {mostrarGrafica && (
-            <Box mt={6}>
-              <Text fontSize="lg" fontWeight="semibold" mb={2}>
-                Gráfica de llegadas acumuladas
-              </Text>
-              <GraficaLlegadas llegadasPorDia={historialLlegadas} />
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={fadeInUp}
+              >
+                <Box mt={6}>
+                  {/*Resumen general */}
+                   {/* 📊 Resumen general (cards arriba de la gráfica) */}
+                    <Box
+                      display="grid"
+                      gridTemplateColumns="repeat(auto-fit, minmax(180px, 1fr))"
+                      gap={4}
+                      mt={6}
+                    >
+                      {[
+                        {
+                          label: "Total de Órdenes",
+                          valor: historialLlegadas.flat().length - historialLlegadas.flat().filter(l => l.tipoOrden.includes("Fallo")).length,
+                          icono: <UserIcon width={24} height={24} />,
+                          color: "blue.500",
+                        },
+                        {
+                          label: "Atención general",
+                          valor: historialLlegadas.flat().filter(l => l.tipoOrden === "Atención general (caja)").length,
+                          icono: <BanknotesIcon width={24} height={24} />,
+                          color: "green.400",
+                        },
+                        {
+                          label: "Plataforma de servicios",
+                          valor: historialLlegadas.flat().filter(l => l.tipoOrden === "Plataforma de servicios").length,
+                          icono: <UserIcon width={24} height={24} />,
+                          color: "teal.400",
+                        },
+                        {
+                          label: "Créditos / préstamos",
+                          valor: historialLlegadas.flat().filter(l => l.tipoOrden === "Créditos / préstamos").length,
+                          icono: <CreditCardIcon width={24} height={24} />,
+                          color: "purple.400",
+                        },
+                        {
+                          label: "Atención empresarial",
+                          valor: historialLlegadas.flat().filter(l => l.tipoOrden === "Atención empresarial").length,
+                          icono: <ClockIcon width={24} height={24} />,
+                          color: "orange.400",
+                        },
+                        {
+                          label: "Fallo del sistema",
+                          valor: historialLlegadas.flat().filter(l => l.tipoOrden.includes("Fallo")).length,
+                          icono: <ExclamationTriangleIcon width={24} height={24} />,
+                          color: "red.500",
+                        },
+                      ].map((item, idx) => (
+                        <Box
+                          key={idx}
+                          bg={bgNormal}
+                          p={4}
+                          borderRadius="xl"
+                          boxShadow="sm"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="space-between"
+                          borderLeft={`6px solid ${item.color}`}
+                        >
+                          <Box>
+                            <Text fontWeight="medium" fontSize="sm" color={colorNormal}>{item.label}</Text>
+                            <Text fontSize="2xl" fontWeight="bold" color={colorNormal}>{item.valor}</Text>
+                          </Box>
+                          <Box color={item.color} aria-hidden>
+                            {item.icono}
+                          </Box>
+                        </Box>
+                      ))}
+                    </Box>
 
-            </Box>
-          )}
 
-        </Box>
+                  <Text fontSize="lg" fontWeight="semibold" mb={2}>
+                    Gráfica de llegadas acumuladas
+                  </Text>
+                  <GraficaLlegadas llegadasPorDia={historialLlegadas} />
+                </Box>
+              </motion.div>
+            )}
+          </Box>
+        </motion.div>
       )}
     </Box>
   );

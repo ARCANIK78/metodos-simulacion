@@ -25,17 +25,22 @@ interface GraficaLlegadasProps {
 const colores = ["#4ade80", "#3b82f6", "#f97316", "#a78bfa", "#ef4444"];
 
 const GraficaLlegadas: React.FC<GraficaLlegadasProps> = ({ llegadasPorDia }) => {
-  if (!llegadasPorDia || llegadasPorDia.length === 0) return <p>No hay datos para graficar</p>;
+  if (!Array.isArray(llegadasPorDia) || llegadasPorDia.length === 0)
+    return <p>No hay datos para graficar</p>;
 
-  // Obtener todos los tipos de orden
+  // Obtener todos los tipos de orden sin usar flat
   const tiposSet = new Set<string>();
-  llegadasPorDia.flat().forEach((l) => tiposSet.add(l.tipoOrden));
+  llegadasPorDia.forEach((dia) => {
+    dia?.forEach((l) => tiposSet.add(l.tipoOrden));
+  });
   const tipos = Array.from(tiposSet);
 
-  // Construir datasets para cada tipo
+  // Crear datasets por tipo
   const datasets = tipos.map((tipo, idx) => ({
     label: tipo,
-    data: llegadasPorDia.map((dia) => dia.filter((l) => l.tipoOrden === tipo).length),
+    data: llegadasPorDia.map(
+      (dia) => dia?.filter((l) => l.tipoOrden === tipo).length || 0
+    ),
     borderColor: colores[idx % colores.length],
     backgroundColor: colores[idx % colores.length],
     fill: false,

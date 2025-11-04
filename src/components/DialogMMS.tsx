@@ -287,7 +287,7 @@ export default function DialogMMS({ isOpen, onClose, onNext }: DialogMMSProps) {
                     {...register("tiempoFallo", { valueAsNumber: true })}
                   />
                   <Text fontSize="sm" color="gray.500">
-                    El fallo puede durar entre 1 y 3 horas.
+                    El fallo puede durar entre 1 y 10 horas.
                   </Text>
                 </FormControl>
               )}
