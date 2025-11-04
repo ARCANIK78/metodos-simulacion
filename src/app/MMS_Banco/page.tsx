@@ -237,24 +237,29 @@ export default function MMSBancoPage() {
                 ))}
               </Tbody>
             </Table>
+            <Box display="grid"
+                      gridTemplateColumns="repeat(auto-fit, minmax(180px, 1fr))"
+                      gap={4}
+                      mt={6}>
+              <Button
+                mt={4}
+                colorScheme="teal"
+                onClick={() =>
+                  generarLlegadas(servicios, sliderValues, numServidores, fallo, tiempoFallo)
+                }
+              >
+                Generar día siguiente
+              </Button>
+              <Button
+                mt={4}
+                colorScheme="blue"
+                onClick={() => setMostrarGrafica((prev) => !prev)}
+              >
+                {mostrarGrafica ? "Ocultar gráfica" : "Generar gráfica"}
+              </Button>
 
-            <Button
-              mt={4}
-              colorScheme="teal"
-              onClick={() =>
-                generarLlegadas(servicios, sliderValues, numServidores, fallo, tiempoFallo)
-              }
-            >
-              Generar día siguiente
-            </Button>
-            <Button
-              mt={4}
-              colorScheme="blue"
-              onClick={() => setMostrarGrafica((prev) => !prev)}
-            >
-              {mostrarGrafica ? "Ocultar gráfica" : "Generar gráfica"}
-            </Button>
-
+            </Box>
+            
             {mostrarGrafica && (
               <motion.div
                 initial="hidden"
