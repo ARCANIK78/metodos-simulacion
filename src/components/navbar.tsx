@@ -303,8 +303,10 @@ const NAV_ITEMS: NavItem[] = [
   { id: "after2", 
     label: "Simulacion", 
     children: [
+      
       {id: "monedaAnimation", label: "Moneda3D", subLabel: "Juegos de Volados ", href: "/monedaAnimation" },
-      {id: "Simulacion", label: "M/M/S Ventillas de un Banco", subLabel: "Análisis de colas M/M/s en las ventanillas de un banco", href: "MMS_Banco" }
+      {id: "Simulacion", label: "M/M/S Ventillas de un Banco", subLabel: "Análisis de colas M/M/s en las ventanillas de un banco", href: "MMS_Banco" },
+      {id: "baraja", label: "Baraja", subLabel: "Juego de cartas", href: "/baraja" },
     ], 
   },
   { id: "after3", label: "after", href: "#" },
