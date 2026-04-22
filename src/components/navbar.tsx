@@ -309,5 +309,11 @@ const NAV_ITEMS: NavItem[] = [
       {id: "baraja", label: "Baraja", subLabel: "Juego de cartas", href: "/baraja" },
     ], 
   },
-  { id: "after3", label: "after", href: "#" },
+  { id: "aproxpi", 
+    label: "Aprox Pi", 
+    children: [
+      {id: "monte-carlo", label: "Monte Carlo", subLabel: "Estimación de Pi usando dardos", href: "/buffon/monte-carlo" },
+      {id: "aguja", label: "Aguja de Buffon", subLabel: "Estimación de Pi con agujas", href: "/buffon/aguja" },
+    ], 
+  },
 ];
